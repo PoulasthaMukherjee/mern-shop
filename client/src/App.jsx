@@ -18,6 +18,7 @@ import { useEffect } from "react";
 import { checkAuth } from "./store/auth-slice";
 import { Skeleton } from "@/components/ui/skeleton";
 import SearchProducts from "./pages/shopping-view/search";
+import apiClient from './api/apiClient'; // Import your apiClient
 
 function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -26,12 +27,25 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    // Fetch user authentication status
     dispatch(checkAuth());
-  }, [dispatch]);
+
+    // Optional: You can fetch user data if needed
+    const fetchUserData = async () => {
+      try {
+        if (isAuthenticated) {
+          const response = await apiClient.get('/api/auth/user'); // Adjust the endpoint as needed
+          console.log("User data:", response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [dispatch, isAuthenticated]); // Add isAuthenticated to dependency array
 
   if (isLoading) return <Skeleton className="w-[800] bg-black h-[600px]" />;
-
-  console.log(isLoading, user);
 
   return (
     <div className="flex flex-col overflow-hidden bg-white">
@@ -42,7 +56,7 @@ function App() {
             <CheckAuth
               isAuthenticated={isAuthenticated}
               user={user}
-            ></CheckAuth>
+            />
           }
         />
         <Route
